@@ -5,7 +5,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const DIR = dirname(fileURLToPath(import.meta.url))
-let html = readFileSync(join(DIR, 'gym.html'), 'utf8')
+let html = readFileSync(join(DIR, 'source.html'), 'utf8')
 
 for (const f of readdirSync(join(DIR, 'photos'))) {
   const num = f.match(/embed-(\d+)\.jpg/)?.[1]
