@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#F7F5F2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12151C" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Зал — программа A/B/C</title>
+<style>
+  :root {
+    --paper:#F7F5F2; --card:#FFFFFF; --ink:#1B1F2A; --muted:#6B7180;
+    --line:#E3DFD8; --copper:#B26E3F; --copper-soft:rgba(178,110,63,.10);
+    --good:#3F7D5C; --good-soft:rgba(63,125,92,.12);
+    --danger:#9E3B3B; --danger-soft:rgba(158,59,59,.10);
+    --shadow:0 1px 2px rgba(27,31,42,.06), 0 4px 16px rgba(27,31,42,.05);
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:#12151C; --card:#1B1F2A; --ink:#ECE8E2; --muted:#8B92A3;
+      --line:#2B303D; --copper:#D08A54; --copper-soft:rgba(208,138,84,.14);
+      --good:#63A57F; --good-soft:rgba(99,165,127,.14);
+      --danger:#D2685F; --danger-soft:rgba(210,104,95,.14);
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
+    }
+  }
+
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html { -webkit-text-size-adjust:100%; }
+  body {
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--sans); font-size:16px; line-height:1.5;
+    padding-bottom:130px;
+  }
+  .wrap { max-width:640px; margin:0 auto; padding:0 16px; }
+
+  header { padding:22px 0 10px; }
+  .eyebrow {
+    margin:0 0 4px; font-size:11px; font-weight:700; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--copper);
+  }
+  h1 { margin:0; font-size:26px; font-weight:800; letter-spacing:-.01em; }
+  .sub { margin:6px 0 0; color:var(--muted); font-size:14px; }
+
+  .alarm {
+    margin:16px 0 0; padding:12px 14px; border-radius:10px;
+    background:var(--danger-soft); border-left:3px solid var(--danger);
+    font-size:13.5px; line-height:1.45;
+  }
+  .alarm b { color:var(--danger); }
+
+  .tabs {
+    position:sticky; top:0; z-index:20; display:flex; gap:6px;
+    padding:12px 0; background:var(--paper);
+  }
+  .tab {
+    flex:1; padding:11px 6px; border:1px solid var(--line); border-radius:9px;
+    background:var(--card); color:var(--muted);
+    font-family:var(--sans); font-size:12px; font-weight:700;
+    letter-spacing:.06em; text-transform:uppercase; cursor:pointer;
+    transition:background .15s, border-color .15s, color .15s;
+  }
+  .tab[aria-selected="true"] { background:var(--copper); border-color:var(--copper); color:#fff; }
+  .tab:focus-visible { outline:2px solid var(--copper); outline-offset:2px; }
+  .tab small {
+    display:block; margin-top:2px; font-size:10px; font-weight:600;
+    letter-spacing:.02em; text-transform:none; opacity:.75;
+  }
+
+  .ex {
+    background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:14px; margin-bottom:10px; box-shadow:var(--shadow);
+    transition:border-color .2s, background .2s;
+  }
+  .ex.done { border-color:var(--good); background:var(--good-soft); }
+  .ex-head { display:flex; align-items:flex-start; gap:10px; }
+  .thumb {
+    width:52px; height:52px; flex:none; padding:0; border-radius:8px;
+    border:1px solid var(--line); overflow:hidden; cursor:zoom-in;
+    background:var(--paper);
+  }
+  .thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+  .thumb:focus-visible { outline:2px solid var(--copper); outline-offset:2px; }
+  .ex-title { flex:1; min-width:0; }
+  .ex-name { font-size:16px; font-weight:700; }
+  .ex-target {
+    font-family:var(--mono); font-size:12px; color:var(--muted);
+    font-variant-numeric:tabular-nums; white-space:nowrap;
+  }
+  .ex-note { margin:3px 0 0; font-size:12.5px; color:var(--muted); }
+  .ex-note.warn { color:var(--copper); font-weight:600; }
+
+  .last {
+    margin:9px 0 0; font-family:var(--mono); font-size:12px; color:var(--muted);
+    font-variant-numeric:tabular-nums;
+  }
+  .last b { color:var(--ink); font-weight:600; }
+  .hint {
+    margin:8px 0 0; padding:7px 10px; border-radius:7px;
+    background:var(--copper-soft); color:var(--copper);
+    font-size:12.5px; font-weight:600;
+  }
+
+  .sets { margin-top:12px; display:flex; flex-direction:column; gap:7px; }
+  .set { display:flex; align-items:center; gap:7px; }
+  .set-n {
+    width:18px; flex:none; font-family:var(--mono); font-size:12px;
+    color:var(--muted); font-variant-numeric:tabular-nums;
+  }
+  .field { flex:1; position:relative; min-width:0; }
+  .field::after {
+    content:attr(data-unit); position:absolute; right:8px; top:50%;
+    transform:translateY(-50%); font-family:var(--mono); font-size:10px;
+    color:var(--muted); pointer-events:none;
+  }
+  .field input {
+    width:100%; padding:9px 26px 9px 8px;
+    border:1px solid var(--line); border-radius:8px;
+    background:var(--paper); color:var(--ink);
+    font-family:var(--mono); font-size:16px; font-weight:600; text-align:center;
+    font-variant-numeric:tabular-nums;
+  }
+  .field input:focus { outline:2px solid var(--copper); outline-offset:-1px; border-color:var(--copper); }
+  .field input::placeholder { color:var(--muted); font-weight:400; opacity:.55; }
+  .check {
+    width:44px; height:38px; flex:none; display:flex; align-items:center;
+    justify-content:center; border:1px solid var(--line); border-radius:8px;
+    background:var(--paper); color:var(--muted); font-size:17px; cursor:pointer;
+    transition:background .15s, border-color .15s, color .15s;
+  }
+  .check[aria-pressed="true"] { background:var(--good); border-color:var(--good); color:#fff; }
+  .check:focus-visible { outline:2px solid var(--copper); outline-offset:2px; }
+
+  .rest {
+    position:fixed; left:0; right:0; bottom:0; z-index:30;
+    background:var(--card); border-top:1px solid var(--line);
+    box-shadow:0 -4px 20px rgba(0,0,0,.10);
+    transform:translateY(105%); transition:transform .25s ease;
+  }
+  .rest.up { transform:translateY(0); }
+  .rest-in {
+    max-width:640px; margin:0 auto; display:flex; align-items:center; gap:10px;
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  .clock {
+    min-width:86px; font-family:var(--mono); font-size:30px; font-weight:700;
+    font-variant-numeric:tabular-nums; letter-spacing:-.02em;
+  }
+  .clock.over { color:var(--good); }
+  .rest-lbl {
+    flex:1; font-size:11px; font-weight:700; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--muted);
+  }
+  .rest-lbl span {
+    display:block; margin-top:2px; font-size:12px; font-weight:500;
+    letter-spacing:0; text-transform:none; color:var(--ink);
+  }
+
+  button.btn {
+    padding:10px 14px; border-radius:9px; border:1px solid var(--line);
+    background:var(--card); color:var(--ink); font-family:var(--sans);
+    font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap;
+    transition:border-color .15s, color .15s, opacity .15s;
+  }
+  button.btn:focus-visible { outline:2px solid var(--copper); outline-offset:2px; }
+  button.btn.solid { background:var(--copper); border-color:var(--copper); color:#fff; }
+  .actions { display:flex; gap:8px; margin:18px 0 8px; }
+  .actions .btn { flex:1; padding:13px 10px; }
+
+  .foot {
+    margin:22px 0 8px; padding-top:16px; border-top:1px solid var(--line);
+    font-size:12.5px; color:var(--muted); line-height:1.55;
+  }
+  .foot b { color:var(--ink); }
+
+  .lightbox {
+    position:fixed; inset:0; z-index:50; display:none;
+    align-items:center; justify-content:center; padding:16px;
+    background:rgba(10,12,16,.92); cursor:zoom-out;
+  }
+  .lightbox.open { display:flex; }
+  .lightbox img { max-width:100%; max-height:82vh; border-radius:12px; }
+  .lightbox p {
+    position:absolute; bottom:26px; left:0; right:0; margin:0; text-align:center;
+    color:#fff; font-size:14px; font-weight:600;
+  }
+
+  .toast {
+    position:fixed; left:50%; bottom:100px; z-index:40;
+    transform:translate(-50%,20px); opacity:0; pointer-events:none;
+    padding:10px 16px; border-radius:9px;
+    background:var(--ink); color:var(--paper); font-size:13px; font-weight:600;
+    transition:opacity .2s, transform .2s;
+  }
+  .toast.show { opacity:1; transform:translate(-50%,0); }
+
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">3 дня в неделю</p>
+    <h1>Зал</h1>
+    <p class="sub">Ягодицы, спина, осанка.</p>
+
+    <div class="alarm">
+      <b>Стоп-сигнал:</b> если под нагрузкой по центру живота лезет валик — упражнение
+      прекратить, вес откатить.<br>
+      <b>Запрещены:</b> планка, скручивания, подъёмы прямых ног, русские твисты,
+      боковые наклоны с весом.
+    </div>
+  </header>
+
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <div id="day"></div>
+
+  <div class="actions">
+    <button class="btn solid" id="copy" type="button">Скопировать тренировку</button>
+    <button class="btn" id="reset" type="button">Сброс</button>
+  </div>
+
+  <p class="foot">
+    Отметки сохраняются в телефоне сами. После зала жми <b>«Скопировать тренировку»</b>
+    и вставь текст в чат — тренировка уйдёт в журнал.<br><br>
+    <b>Прогрессия:</b> все подходы чисто в верхней границе повторов → +2.5–5 кг
+    на тренажёрах, +2 кг на гантелях. Не дотянула до нижней границы — вес не трогаем.
+  </p>
+</div>
+
+<div class="rest" id="rest">
+  <div class="rest-in">
+    <div class="clock" id="clock">1:30</div>
+    <div class="rest-lbl">Отдых<span id="restNote">Подход засчитан</span></div>
+    <button class="btn" id="plus30" type="button">+30 сек</button>
+    <button class="btn" id="skip" type="button">Хватит</button>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox">
+  <img id="lightboxImg" alt="">
+  <p id="lightboxCap"></p>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var PROGRAM = {
+    A: {
+      title: 'День A', sub: 'Ягодицы',
+      ex: [
+        { n:'Румынская тяга', sets:3, reps:'10', unit:'кг',
+          note:'Выдох на подъёме. Живот держать — валика быть не должно', warn:true },
+        { n:'Приседания в Смите', sets:3, reps:'12', unit:'кг',
+          photo:'photos/smith-crossover.jpg' },
+        { n:'Ягодичный мост со штангой', sets:3, reps:'12', unit:'кг',
+          note:'Главное упражнение на ягодицы' },
+        { n:'Отведение ноги назад в кроссовере', sets:3, reps:'15', unit:'кг',
+          note:'На каждую ногу', photo:'photos/smith-crossover.jpg' },
+        { n:'Отведение ног в стороны', sets:3, reps:'15', unit:'кг',
+          photo:'photos/abduction.jpg' },
+        { n:'Dead bug', sets:3, reps:'10', unit:'',
+          note:'Поясница прижата к полу' }
+      ]
+    },
+    B: {
+      title: 'День B', sub: 'Спина',
+      ex: [
+        { n:'Тяга верхнего блока к груди', sets:3, reps:'12', unit:'кг',
+          photo:'photos/pulldown-row.jpg' },
+        { n:'Тяга горизонтального блока', sets:3, reps:'12', unit:'кг',
+          note:'Сводить лопатки, не тянуть руками', photo:'photos/pulldown-row.jpg' },
+        { n:'Тяга гантели в наклоне', sets:3, reps:'12', unit:'кг',
+          note:'На каждую руку, с упором в скамью', photo:'photos/bench.jpg' },
+        { n:'Разведения в наклоне', sets:3, reps:'15', unit:'кг',
+          note:'Осанка. Вес лёгкий', photo:'photos/bench.jpg' },
+        { n:'Face pull', sets:3, reps:'15', unit:'кг',
+          note:'Осанка. Тянуть к лицу, локти выше кистей', photo:'photos/smith-crossover.jpg' },
+        { n:'Bird dog', sets:3, reps:'10', unit:'',
+          note:'На каждую сторону' }
+      ]
+    },
+    C: {
+      title: 'День C', sub: 'Ноги',
+      ex: [
+        { n:'Жим ногами', sets:3, reps:'12', unit:'кг',
+          note:'Стопы выше по платформе = больше ягодицы', photo:'photos/leg-press.jpg' },
+        { n:'Болгарский сплит-присед', sets:3, reps:'10', unit:'кг',
+          note:'На каждую ногу, задняя нога на скамье', photo:'photos/bench.jpg' },
+        { n:'Сгибание ног лёжа', sets:3, reps:'12', unit:'кг',
+          photo:'photos/leg-curl.jpg' },
+        { n:'Отведение ног сидя', sets:3, reps:'15', unit:'кг',
+          photo:'photos/abduction.jpg' },
+        { n:'Вакуум', sets:3, reps:'20 сек', unit:'',
+          note:'Утягивает талию изнутри' },
+        { n:'Dead bug', sets:3, reps:'10', unit:'' }
+      ]
+    }
+  };
+
+  var KEY = 'gym-b-v1';
+  var REST = 90;
+
+  var store = load();
+  var current = 'A';
+  var timer = null;
+  var left = REST;
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return { today: {}, last: {} };
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {}
+  }
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function today() {
+    var d = new Date();
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  }
+  function key(day, i) { return day + '|' + i; }
+
+  function archive() {
+    var d = (store.today && store.today.data) || {};
+    Object.keys(d).forEach(function (k) {
+      var rows = d[k].filter(function (r) { return r.done && (r.w || r.r); });
+      if (rows.length) store.last[k] = { date: store.today.date, rows: rows };
+    });
+    store.today = { date: today(), data: {} };
+    save();
+  }
+
+  if (store.today && store.today.date && store.today.date !== today()) archive();
+  if (!store.today || !store.today.date) store.today = { date: today(), data: {} };
+
+  function cell(day, i, s) {
+    var k = key(day, i);
+    var d = store.today.data[k] || (store.today.data[k] = []);
+    while (d.length <= s) d.push({ w:'', r:'', done:false });
+    return d[s];
+  }
+
+  // ── Вкладки ─────────────────────────────────────────
+  var tabsEl = document.getElementById('tabs');
+  var keys = Object.keys(PROGRAM);
+
+  keys.forEach(function (k) {
+    var b = document.createElement('button');
+    b.className = 'tab';
+    b.type = 'button';
+    b.setAttribute('role', 'tab');
+    b.setAttribute('aria-selected', k === current ? 'true' : 'false');
+    b.innerHTML = PROGRAM[k].title + '<small>' + PROGRAM[k].sub + '</small>';
+    b.addEventListener('click', function () {
+      current = k;
+      Array.prototype.forEach.call(tabsEl.children, function (c, idx) {
+        c.setAttribute('aria-selected', keys[idx] === k ? 'true' : 'false');
+      });
+      render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    tabsEl.appendChild(b);
+  });
+
+  // ── Отрисовка дня ───────────────────────────────────
+  var dayEl = document.getElementById('day');
+
+  function render() {
+    var day = PROGRAM[current];
+    dayEl.textContent = '';
+
+    day.ex.forEach(function (ex, i) {
+      var card = document.createElement('div');
+      card.className = 'ex';
+
+      var head = document.createElement('div');
+      head.className = 'ex-head';
+
+      if (ex.photo) {
+        var th = document.createElement('button');
+        th.className = 'thumb';
+        th.type = 'button';
+        th.setAttribute('aria-label', 'Фото: ' + ex.n);
+        var im = document.createElement('img');
+        im.src = ex.photo;
+        im.alt = ex.n;
+        im.loading = 'lazy';
+        th.appendChild(im);
+        th.addEventListener('click', function () { zoom(ex.photo, ex.n); });
+        head.appendChild(th);
+      }
+
+      var tt = document.createElement('div');
+      tt.className = 'ex-title';
+      var nm = document.createElement('div');
+      nm.className = 'ex-name';
+      nm.textContent = ex.n;
+      tt.appendChild(nm);
+      if (ex.note) {
+        var nt = document.createElement('p');
+        nt.className = 'ex-note' + (ex.warn ? ' warn' : '');
+        nt.textContent = ex.note;
+        tt.appendChild(nt);
+      }
+      head.appendChild(tt);
+
+      var tg = document.createElement('div');
+      tg.className = 'ex-target';
+      tg.textContent = ex.sets + ' × ' + ex.reps;
+      head.appendChild(tg);
+
+      card.appendChild(head);
+
+      var prev = store.last[key(current, i)];
+      if (prev) {
+        var p = document.createElement('p');
+        p.className = 'last';
+        p.innerHTML = 'Прошлый раз: <b>' + prev.rows.map(function (r) {
+          return (r.w ? r.w + '×' : '') + (r.r || '—');
+        }).join('  ') + '</b>';
+        card.appendChild(p);
+
+        var top = parseInt(ex.reps, 10);
+        if (ex.unit && top && prev.rows.length >= ex.sets &&
+            prev.rows.every(function (r) { return parseInt(r.r, 10) >= top; })) {
+          var h = document.createElement('div');
+          h.className = 'hint';
+          h.textContent = 'Прошлый раз всё дотянула — добавь 2.5 кг';
+          card.appendChild(h);
+        }
+      }
+
+      var sets = document.createElement('div');
+      sets.className = 'sets';
+
+      for (var s = 0; s < ex.sets; s++) {
+        sets.appendChild(setRow(ex, i, s, card));
+      }
+      card.appendChild(sets);
+
+      paint(card, current, i, ex);
+      dayEl.appendChild(card);
+    });
+  }
+
+  function setRow(ex, i, s, card) {
+    var data = cell(current, i, s);
+    var row = document.createElement('div');
+    row.className = 'set';
+
+    var n = document.createElement('div');
+    n.className = 'set-n';
+    n.textContent = (s + 1) + '.';
+    row.appendChild(n);
+
+    if (ex.unit) {
+      var fw = document.createElement('div');
+      fw.className = 'field';
+      fw.setAttribute('data-unit', 'кг');
+      var iw = document.createElement('input');
+      iw.type = 'number'; iw.inputMode = 'decimal'; iw.step = '0.5';
+      iw.placeholder = 'вес'; iw.value = data.w;
+      iw.setAttribute('aria-label', ex.n + ', подход ' + (s + 1) + ', вес');
+      iw.addEventListener('input', function () { data.w = iw.value; save(); });
+      fw.appendChild(iw);
+      row.appendChild(fw);
+    }
+
+    var fr = document.createElement('div');
+    fr.className = 'field';
+    fr.setAttribute('data-unit', 'повт');
+    var ir = document.createElement('input');
+    ir.type = 'number'; ir.inputMode = 'numeric';
+    ir.placeholder = parseInt(ex.reps, 10) || ex.reps; ir.value = data.r;
+    ir.setAttribute('aria-label', ex.n + ', подход ' + (s + 1) + ', повторы');
+    ir.addEventListener('input', function () { data.r = ir.value; save(); });
+    fr.appendChild(ir);
+    row.appendChild(fr);
+
+    var ck = document.createElement('button');
+    ck.className = 'check';
+    ck.type = 'button';
+    ck.setAttribute('aria-pressed', data.done ? 'true' : 'false');
+    ck.setAttribute('aria-label', 'Подход ' + (s + 1) + ' сделан');
+    ck.textContent = data.done ? '✓' : '';
+    ck.addEventListener('click', function () {
+      data.done = !data.done;
+      ck.setAttribute('aria-pressed', data.done ? 'true' : 'false');
+      ck.textContent = data.done ? '✓' : '';
+      if (data.done && !data.r) {
+        data.r = String(parseInt(ex.reps, 10) || ex.reps);
+        ir.value = data.r;
+      }
+      save();
+      paint(card, current, i, ex);
+      if (data.done) startRest();
+    });
+    row.appendChild(ck);
+
+    return row;
+  }
+
+  function paint(card, day, i, ex) {
+    var d = store.today.data[key(day, i)] || [];
+    var all = d.length >= ex.sets && d.slice(0, ex.sets).every(function (r) { return r.done; });
+    card.classList.toggle('done', all);
+  }
+
+  // ── Лайтбокс ────────────────────────────────────────
+  var lb = document.getElementById('lightbox');
+  var lbImg = document.getElementById('lightboxImg');
+  var lbCap = document.getElementById('lightboxCap');
+
+  function zoom(src, cap) {
+    lbImg.src = src;
+    lbImg.alt = cap;
+    lbCap.textContent = cap;
+    lb.classList.add('open');
+  }
+  lb.addEventListener('click', function () { lb.classList.remove('open'); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') lb.classList.remove('open');
+  });
+
+  // ── Таймер отдыха ───────────────────────────────────
+  var restEl = document.getElementById('rest');
+  var clockEl = document.getElementById('clock');
+  var noteEl = document.getElementById('restNote');
+
+  function fmt(s) {
+    var m = Math.floor(Math.abs(s) / 60);
+    var x = Math.abs(s) % 60;
+    return (s < 0 ? '+' : '') + m + ':' + pad(x);
+  }
+  function startRest() {
+    left = REST;
+    restEl.classList.add('up');
+    noteEl.textContent = 'Подход засчитан';
+    clockEl.classList.remove('over');
+    clockEl.textContent = fmt(left);
+    if (timer) clearInterval(timer);
+    timer = setInterval(function () {
+      left--;
+      clockEl.textContent = fmt(left);
+      if (left <= 0) {
+        clockEl.classList.add('over');
+        noteEl.textContent = 'Пора работать';
+      }
+      if (left <= -60) stopRest();
+    }, 1000);
+  }
+  function stopRest() {
+    if (timer) clearInterval(timer);
+    timer = null;
+    restEl.classList.remove('up');
+  }
+  document.getElementById('plus30').addEventListener('click', function () {
+    left += 30;
+    clockEl.textContent = fmt(left);
+    if (left > 0) {
+      clockEl.classList.remove('over');
+      noteEl.textContent = 'Подход засчитан';
+    }
+  });
+  document.getElementById('skip').addEventListener('click', stopRest);
+
+  // ── Копирование / сброс ─────────────────────────────
+  document.getElementById('copy').addEventListener('click', function () {
+    var lines = [];
+    keys.forEach(function (dk) {
+      var rows = [];
+      PROGRAM[dk].ex.forEach(function (ex, i) {
+        var d = store.today.data[key(dk, i)] || [];
+        var done = d.filter(function (r) { return r.done; });
+        if (!done.length) return;
+        rows.push('— ' + ex.n + ': ' + done.map(function (r) {
+          return (r.r || '?') + (r.w ? ' @' + r.w + 'кг' : '');
+        }).join(', '));
+      });
+      if (rows.length) {
+        lines.push('День ' + dk + ' (' + PROGRAM[dk].sub + '), ' + store.today.date + ':');
+        lines.push(rows.join('\n'));
+      }
+    });
+
+    if (!lines.length) { toast('Нечего копировать — ни одного подхода'); return; }
+
+    var text = 'Тренировка:\n' + lines.join('\n');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { toast('Скопировано — вставь в чат'); },
+        function () { toast('Не скопировалось, выдели вручную'); }
+      );
+    } else {
+      toast('Буфер недоступен');
+    }
+  });
+
+  document.getElementById('reset').addEventListener('click', function () {
+    if (!confirm('Убрать отметки за сегодня? Веса уйдут в «прошлый раз».')) return;
+    archive();
+    stopRest();
+    render();
+    toast('Тренировка закрыта');
+  });
+
+  var toastEl = document.getElementById('toast');
+  var toastT = null;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    if (toastT) clearTimeout(toastT);
+    toastT = setTimeout(function () { toastEl.classList.remove('show'); }, 2200);
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
