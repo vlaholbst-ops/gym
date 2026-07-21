@@ -26,12 +26,44 @@ const DAY_RE = /^(\d{4}-\d{2}-\d{2}) — День ([ABC])\.md$/
 
 // ---------- парсеры подходов ----------
 
-// Владимир: "57кг×12, 57кг×12, 57кг×12" → [{w:57,r:12}, ...]
+// Владимир. Журнал ведётся в нескольких форматах — читаем все, иначе тренировка
+// молча пропадает со страницы («в прошлый раз не сделано» при выполненной работе):
+//   "57кг×12, 57кг×12, 57кг×12"  — развёрнутый, до 15.07
+//   "3x12 @72.5кг"               — так пишет `health workout --sets`, с 17.07
+//   "6кг: 12,12,8"               — вес вынесен вперёд, повторы разные
+//   "3x12 без веса"              — упражнение с собственным весом, w:0
+const num = (x) => parseFloat(x.replace(',', '.'))
+
 function parseSetsVlad(s) {
   const out = []
+
+  // "3x12 @72.5кг" — N подходов по M повторов с одним весом
+  let m = s.match(/^\s*(\d+)\s*[×xх*]\s*(\d+)\s*@\s*(\d+(?:[.,]\d+)?)\s*кг/i)
+  if (m) {
+    for (let i = 0; i < parseInt(m[1], 10); i++) out.push({ w: num(m[3]), r: parseInt(m[2], 10) })
+    return out
+  }
+
+  // "6кг: 12,12,8" — вес общий, повторы по подходам
+  m = s.match(/^\s*(\d+(?:[.,]\d+)?)\s*кг\s*:\s*(.+)$/i)
+  if (m) {
+    for (const chunk of m[2].split(',')) {
+      const r = chunk.match(/\d+/)
+      if (r) out.push({ w: num(m[1]), r: parseInt(r[0], 10) })
+    }
+    return out
+  }
+
+  // "3x12 без веса" — гиперэкстензия, планка и прочее без отягощения
+  m = s.match(/^\s*(\d+)\s*[×xх*]\s*(\d+)\s*(?:без\s+веса|б\/в)\s*$/i)
+  if (m) {
+    for (let i = 0; i < parseInt(m[1], 10); i++) out.push({ w: 0, r: parseInt(m[2], 10) })
+    return out
+  }
+
+  // "57кг×12, 57кг×12, ..." — развёрнутый формат
   const re = /(\d+(?:[.,]\d+)?)\s*кг\s*[×xх*]\s*(\d+)/gi
-  let m
-  while ((m = re.exec(s))) out.push({ w: parseFloat(m[1].replace(',', '.')), r: parseInt(m[2], 10) })
+  while ((m = re.exec(s))) out.push({ w: num(m[1]), r: parseInt(m[2], 10) })
   return out
 }
 
@@ -93,6 +125,9 @@ function progressVlad(ex, prev) {
   const top = Math.max(...prev.sets.map((s) => s.w))
   const repsAtTop = prev.sets.filter((s) => s.w === top).map((s) => s.r)
 
+  if (top === 0) {
+    return { last, next: `без веса — держим технику, ${ex.repMax} повторов`, start: 0 }
+  }
   if (weights.length > 1) {
     return { last, next: `выровняй: ${top} кг во всех подходах — ты его уже брал`, start: top }
   }
