@@ -110,7 +110,11 @@ const fmtDate = (iso) => iso.slice(8, 10) + '.' + iso.slice(5, 7)
 // ---------- прогрессия: Владимир (формат вес × повторы) ----------
 
 function progressVlad(ex, prev) {
-  if (!prev) return { last: '—', next: `первый раз: подбери вес на ${ex.reps} повторов`, start: ex.startIfNone }
+  if (!prev) {
+    // без отягощения «подбери вес» звучит абсурдно — планка, гиперэкстензия
+    const next = ex.step > 0 ? `первый раз: подбери вес на ${ex.reps}` : `первый раз: ${ex.reps}, следи за техникой`
+    return { last: '—', next, start: ex.startIfNone }
+  }
 
   if (!prev.sets.length) {
     return {
