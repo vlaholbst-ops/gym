@@ -153,7 +153,11 @@ function progressVlad(ex, prev) {
     const jump = grown - top
     const big = jump / top > 0.12
     const next = big
-      ? `растём: ${grown} кг — это +${jump}, ближайший вес на стойке. Прыжок большой: не вытянешь ${ex.repMax} — сделай ${ex.repMin} и добери повторами`
+      ? `растём: ${grown} кг — это +${jump}, ближайший вес на стойке. Прыжок большой: ${
+          ex.repMin === ex.repMax
+            ? `если ${ex.repMax} повторов не идут — сделай сколько выйдет чисто и дорасти`
+            : `не вытянешь ${ex.repMax} — сделай ${ex.repMin} и добери повторами`
+        }`
       : `растём: ${grown} кг`
     return { last: last + '. Все подходы в верхней границе', next, start: grown }
   }
