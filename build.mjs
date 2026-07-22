@@ -107,6 +107,19 @@ function readJournal(dir, parseSets) {
 
 const fmtDate = (iso) => iso.slice(8, 10) + '.' + iso.slice(5, 7)
 
+// ---------- сетка весов ----------
+// В зале нет произвольных весов. Стек тренажёров идёт по 5 кг ровными числами
+// (10/15/20), жим ногами — по 5 со смещением 2.5 (62.5/67.5/72.5), гантели — по 2.
+// Прирост округляем ВВЕРХ до ближайшего РЕАЛЬНО существующего веса: назначать
+// 17.5 кг там, где на стойке только 15 и 20, — вредный совет.
+function snapUp(w, ex) {
+  const round = (x) => Math.round(x * 10) / 10
+  if (!ex.grid) return round(w)
+  const off = ex.gridOffset || 0
+  const k = Math.ceil((w - off) / ex.grid - 1e-9)
+  return round(off + k * ex.grid)
+}
+
 // ---------- прогрессия: Владимир (формат вес × повторы) ----------
 
 function progressVlad(ex, prev) {
@@ -136,8 +149,13 @@ function progressVlad(ex, prev) {
     return { last, next: `выровняй: ${top} кг во всех подходах — ты его уже брал`, start: top }
   }
   if (ex.step > 0 && repsAtTop.every((r) => r >= ex.repMax)) {
-    const grown = Math.round((top + ex.step) * 10) / 10
-    return { last: last + '. Все подходы в верхней границе', next: `растём: ${grown} кг`, start: grown }
+    const grown = snapUp(top + ex.step, ex)
+    const jump = grown - top
+    const big = jump / top > 0.12
+    const next = big
+      ? `растём: ${grown} кг — это +${jump}, ближайший вес на стойке. Прыжок большой: не вытянешь ${ex.repMax} — сделай ${ex.repMin} и добери повторами`
+      : `растём: ${grown} кг`
+    return { last: last + '. Все подходы в верхней границе', next, start: grown }
   }
   if (repsAtTop.some((r) => r < ex.repMin)) {
     return { last, next: `держим ${top} кг — недотянул до ${ex.repMin} повторов`, start: top }
@@ -168,7 +186,7 @@ function progressTanya(ex, prev) {
     return { last, next: `выровняй: ${top} кг во всех подходах — ты его уже брала`, start: top }
   }
   if (ex.step > 0 && repsAtTop.every((r) => r >= ex.repMax)) {
-    const grown = Math.round((top + ex.step) * 10) / 10
+    const grown = snapUp(top + ex.step, ex)
     return { last, next: `растём: ${grown} кг`, start: grown }
   }
   if (repsAtTop.some((r) => r < ex.repMin)) {
@@ -190,7 +208,7 @@ function reportSessions(who, sessions, dayNames) {
     const known = Object.keys(sessions[day]?.rows || {})
     if (!known.length) continue
     const missing = names.filter((n) => !known.includes(n))
-    if (missing.length) console.log(`  ⚠️  День ${day}: есть в журнале, нет в программе или переименовано — ${missing.join(', ')}`)
+    if (missing.length) console.log(`  ⚠️  День ${day}: есть в программе, нет в последнем журнале (не делал или имя разошлось) — ${missing.join(', ')}`)
   }
 }
 
