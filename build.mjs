@@ -232,7 +232,8 @@ function buildVlad() {
       const p = progressVlad(ex, row ? { ...row, date: sessions[day].date } : null)
       return {
         n: ex.n, name: ex.name, photo: ex.photo,
-        sets: ex.sets, reps: ex.reps, rest: ex.rest,
+        sets: ex.sets, reps: ex.reps, repMin: ex.repMin, repMax: ex.repMax, rest: ex.rest,
+        step: ex.step, grid: ex.grid, gridOffset: ex.gridOffset, startIfNone: ex.startIfNone,
         cues: ex.cues, warn: ex.warn, diagram: ex.diagram, diagramCap: ex.diagramCap,
         video: ex.video, last: p.last, next: p.next, start: p.start,
       }

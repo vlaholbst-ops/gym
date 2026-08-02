@@ -73,6 +73,13 @@
 
   .suggest { font-size: 11.5px; color: var(--faint); margin: 0 0 7px; }
   .suggest b { color: var(--accent); font-weight: 650; }
+  .suggestline { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+  .suggestline .suggest { flex: 1; margin: 0; }
+  #sync {
+    appearance: none; border: 1px solid var(--line); background: var(--card-2); color: var(--dim);
+    border-radius: 7px; font: 600 11px var(--ui); padding: 5px 7px; cursor: pointer;
+  }
+  #sync:disabled { opacity: .65; cursor: wait; }
 
   .prog { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 8px; }
   .prog i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .25s ease; }
@@ -282,7 +289,10 @@
     <button id="tabB" aria-pressed="false">Низ</button>
     <button id="tabC" aria-pressed="false">Всё тело</button>
   </div>
-  <p class="suggest" id="suggest"></p>
+  <div class="suggestline">
+    <p class="suggest" id="suggest"></p>
+    <button id="sync" type="button">↻ Веса</button>
+  </div>
   <div class="prog"><i id="progI"></i></div>
 </header>
 
@@ -362,7 +372,13 @@
       "photo": "p4",
       "sets": 3,
       "reps": "10–12",
+      "repMin": 10,
+      "repMax": 12,
       "rest": 90,
+      "step": 2.5,
+      "grid": 5,
+      "gridOffset": 0,
+      "startIfNone": 20,
       "cues": [
         "Жать вперёд на уровне груди.",
         "Локти примерно 45°, без глубокой растяжки плеча."
@@ -379,7 +395,13 @@
       "photo": "p3",
       "sets": 4,
       "reps": "10–12",
+      "repMin": 10,
+      "repMax": 12,
       "rest": 90,
+      "step": 2.5,
+      "grid": 2.5,
+      "gridOffset": 0,
+      "startIfNone": 12.5,
       "cues": [
         "Грудь лежит на скамье — поясница разгружена.",
         "Тянуть локтем назад, сводя лопатку."
@@ -395,7 +417,13 @@
       "photo": null,
       "sets": 3,
       "reps": "10–12",
+      "repMin": 10,
+      "repMax": 12,
       "rest": 90,
+      "step": 2,
+      "grid": 2,
+      "gridOffset": 0,
+      "startIfNone": 10,
       "cues": [
         "Жим вверх от груди, не тяга к себе.",
         "Локти около 45°, без провала плеча назад."
@@ -412,7 +440,13 @@
       "photo": "p5",
       "sets": 3,
       "reps": "10–12",
+      "repMin": 10,
+      "repMax": 12,
       "rest": 90,
+      "step": 2.5,
+      "grid": 5,
+      "gridOffset": 0,
+      "startIfNone": 25,
       "cues": [
         "Тянуть к верху груди, не за голову.",
         "Нейтральный или узкий хват, без рывка корпусом."
@@ -428,7 +462,13 @@
       "photo": "p5",
       "sets": 3,
       "reps": "10–12",
+      "repMin": 10,
+      "repMax": 12,
       "rest": 90,
+      "step": 2.5,
+      "grid": 5,
+      "gridOffset": 0,
+      "startIfNone": 30,
       "cues": [
         "Корпус прямой и зафиксирован.",
         "Тянуть к животу, сводя лопатки."
@@ -444,7 +484,13 @@
       "photo": null,
       "sets": 3,
       "reps": "12–15",
+      "repMin": 12,
+      "repMax": 15,
       "rest": 60,
+      "step": 2,
+      "grid": 2,
+      "gridOffset": 0,
+      "startIfNone": 6,
       "cues": [
         "Без рывка и раскачки корпусом.",
         "Лёгкий вес, плечо не поднимать к уху."
@@ -461,7 +507,13 @@
       "photo": "p1",
       "sets": 3,
       "reps": "12–15",
+      "repMin": 12,
+      "repMax": 15,
       "rest": 60,
+      "step": 2.5,
+      "grid": 5,
+      "gridOffset": 0,
+      "startIfNone": 25,
       "cues": [
         "Локти прижаты к бокам и не двигаются.",
         "Рука остаётся перед корпусом."
@@ -477,7 +529,13 @@
       "photo": null,
       "sets": 3,
       "reps": "10–12",
+      "repMin": 10,
+      "repMax": 12,
       "rest": 60,
+      "step": 2,
+      "grid": 2,
+      "gridOffset": 0,
+      "startIfNone": 8,
       "cues": [
         "Локти прижаты к бокам, корпусом не помогать.",
         "Без раскачки, движение перед корпусом."
@@ -495,7 +553,13 @@
       "photo": "p6",
       "sets": 4,
       "reps": "10–12",
+      "repMin": 10,
+      "repMax": 12,
       "rest": 120,
+      "step": 7.5,
+      "grid": 7.5,
+      "gridOffset": 5,
+      "startIfNone": 80,
       "cues": [
         "Поясницу и таз не отрывать от спинки.",
         "Колени по линии стоп, не в замок."
@@ -511,7 +575,13 @@
       "photo": null,
       "sets": 3,
       "reps": "12–15",
+      "repMin": 12,
+      "repMax": 15,
       "rest": 75,
+      "step": 2.5,
+      "grid": 5,
+      "gridOffset": 0,
+      "startIfNone": 25,
       "cues": [
         "Двигаться плавно, без удара в колене.",
         "Таз и поясница прижаты к сиденью."
@@ -527,7 +597,13 @@
       "photo": "p9",
       "sets": 3,
       "reps": "12–15",
+      "repMin": 12,
+      "repMax": 15,
       "rest": 75,
+      "step": 2.5,
+      "grid": 5,
+      "gridOffset": 0,
+      "startIfNone": 25,
       "cues": [
         "Без рывков, контролировать негативную фазу.",
         "Работает бицепс бедра, а не поясница."
@@ -543,7 +619,13 @@
       "photo": "p7",
       "sets": 3,
       "reps": "15",
+      "repMin": 15,
+      "repMax": 15,
       "rest": 60,
+      "step": 2.5,
+      "grid": 2.5,
+      "gridOffset": 0,
+      "startIfNone": 37.5,
       "cues": [
         "Режим ABDUCTION: разводить ноги.",
         "Не помогать корпусом; ягодицы работают на стабильность таза."
@@ -559,7 +641,11 @@
       "photo": null,
       "sets": 3,
       "reps": "12",
+      "repMin": 12,
+      "repMax": 12,
       "rest": 60,
+      "step": 0,
+      "startIfNone": 0,
       "cues": [
         "Подниматься до прямой линии корпуса.",
         "Внизу не округлять спину."
@@ -576,7 +662,13 @@
       "photo": null,
       "sets": 3,
       "reps": "30–40 сек / сторону",
+      "repMin": 30,
+      "repMax": 40,
       "rest": 60,
+      "step": 2,
+      "grid": 2,
+      "gridOffset": 0,
+      "startIfNone": 12,
       "cues": [
         "Гантель в одной руке, плечи и таз держать ровно.",
         "40 сек чисто на обе стороны — следующий раз +2 кг."
@@ -594,7 +686,13 @@
       "photo": "p6",
       "sets": 3,
       "reps": "10–12",
+      "repMin": 10,
+      "repMax": 12,
       "rest": 120,
+      "step": 7.5,
+      "grid": 7.5,
+      "gridOffset": 5,
+      "startIfNone": 80,
       "cues": [
         "Стопы выше и шире: акцент на ягодицы и бицепс бедра.",
         "Поясницу не отрывать, колени не в замок."
@@ -610,7 +708,13 @@
       "photo": "p4",
       "sets": 3,
       "reps": "10–12",
+      "repMin": 10,
+      "repMax": 12,
       "rest": 90,
+      "step": 2.5,
+      "grid": 5,
+      "gridOffset": 0,
+      "startIfNone": 20,
       "cues": [
         "Жать вперёд на уровне груди.",
         "Локти около 45°."
@@ -627,7 +731,13 @@
       "photo": "p5",
       "sets": 4,
       "reps": "10–12",
+      "repMin": 10,
+      "repMax": 12,
       "rest": 90,
+      "step": 2.5,
+      "grid": 5,
+      "gridOffset": 0,
+      "startIfNone": 30,
       "cues": [
         "Корпус прямой и зафиксирован.",
         "Тянуть к животу, сводя лопатки."
@@ -643,7 +753,13 @@
       "photo": "p5",
       "sets": 3,
       "reps": "10–12",
+      "repMin": 10,
+      "repMax": 12,
       "rest": 90,
+      "step": 2.5,
+      "grid": 5,
+      "gridOffset": 0,
+      "startIfNone": 25,
       "cues": [
         "Тянуть к верху груди, не за голову.",
         "Нейтральный или узкий хват."
@@ -659,7 +775,13 @@
       "photo": "p9",
       "sets": 3,
       "reps": "12–15",
+      "repMin": 12,
+      "repMax": 15,
       "rest": 75,
+      "step": 2.5,
+      "grid": 5,
+      "gridOffset": 0,
+      "startIfNone": 25,
       "cues": [
         "Без рывков, контролировать негативную фазу.",
         "Работает бицепс бедра, а не поясница."
@@ -675,7 +797,13 @@
       "photo": null,
       "sets": 3,
       "reps": "10–12",
+      "repMin": 10,
+      "repMax": 12,
       "rest": 30,
+      "step": 2,
+      "grid": 2,
+      "gridOffset": 0,
+      "startIfNone": 8,
       "cues": [
         "Суперсет с разгибанием на трицепс.",
         "Локти прижаты к бокам, без раскачки."
@@ -691,7 +819,13 @@
       "photo": "p1",
       "sets": 3,
       "reps": "12–15",
+      "repMin": 12,
+      "repMax": 15,
       "rest": 60,
+      "step": 2.5,
+      "grid": 5,
+      "gridOffset": 0,
+      "startIfNone": 25,
       "cues": [
         "Суперсет с предшествующим сгибанием на бицепс.",
         "Локти прижаты к бокам."
@@ -707,7 +841,13 @@
       "photo": null,
       "sets": 3,
       "reps": "30–40 сек / сторону",
+      "repMin": 30,
+      "repMax": 40,
       "rest": 60,
+      "step": 2,
+      "grid": 2,
+      "gridOffset": 0,
+      "startIfNone": 12,
       "cues": [
         "Плечи и таз ровно; не заваливаться за гантель.",
         "40 сек чисто на обе стороны — следующий раз +2 кг."
@@ -724,6 +864,7 @@
   var GOOGLE_SPREADSHEET_ID = "1BRNnPLaVh2a_9HHAKvLXgrDgGITnq5c5qW7u2fAqNzk";
   var GOOGLE_SHEET_NAME = "Журнал";
   var GOOGLE_SCOPE = "https://www.googleapis.com/auth/spreadsheets";
+  var PROGRAM_START = "2026-08-03";
 
   var app = document.getElementById("app");
   var toastEl = document.getElementById("toast");
@@ -735,6 +876,8 @@
   var state = {};
   var googleToken = null;
   var saving = false;
+  var syncing = false;
+  var userTouched = false;
 
   var today = new Date();
   var DOW = ["ВС", "ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ"];
@@ -883,6 +1026,7 @@
           row.querySelector('[data-f="w"]').value = s.w;
           row.querySelector('[data-f="r"]').value = s.r;
         }
+        userTouched = true;
         save();
         paint();
       });
@@ -892,6 +1036,7 @@
         if (!inp) return;
         var row = inp.closest(".set");
         st.sets[+row.getAttribute("data-set")][inp.getAttribute("data-f")] = parseFloat(inp.value) || 0;
+        userTouched = true;
         save();
       });
 
@@ -956,6 +1101,113 @@
     if (message) toast(message);
   }
 
+  function updateSyncButton() {
+    var button = document.getElementById("sync");
+    if (!button) return;
+    button.disabled = syncing;
+    button.textContent = syncing ? "Синхр…" : "↻ Веса";
+  }
+
+  function snapUp(weight, ex) {
+    if (!ex.grid) return Math.round(weight * 10) / 10;
+    var offset = ex.gridOffset || 0;
+    return Math.round((offset + Math.ceil((weight - offset) / ex.grid - 1e-9) * ex.grid) * 10) / 10;
+  }
+
+  function formatShortDate(date) { return date.slice(8, 10) + "." + date.slice(5, 7); }
+
+  function recommendation(ex, session) {
+    if (!session || !session.sets.length) return { last: "—", next: "первый раз: " + ex.reps, start: ex.startIfNone };
+    var sets = session.sets;
+    var last = formatShortDate(session.date) + " — " + sets.map(function (s) { return s.w + "кг × " + s.r; }).join(", ");
+    var weights = Array.from(new Set(sets.map(function (s) { return s.w; })));
+    var top = Math.max.apply(null, weights);
+    var repsAtTop = sets.filter(function (s) { return s.w === top; }).map(function (s) { return s.r; });
+    if (top === 0) return { last: last, next: "без веса — держим технику, " + ex.repMax + " повторов", start: 0 };
+    if (weights.length > 1) return { last: last, next: "выровняй: " + top + " кг во всех подходах", start: top };
+    if (ex.step > 0 && repsAtTop.every(function (r) { return r >= ex.repMax; })) {
+      var grown = snapUp(top + ex.step, ex);
+      return { last: last + ". Все подходы в верхней границе", next: "растём: " + grown + " кг", start: grown };
+    }
+    if (repsAtTop.some(function (r) { return r < ex.repMin; })) {
+      return { last: last, next: "держим " + top + " кг — недотянул до " + ex.repMin + " повторов", start: top };
+    }
+    return { last: last, next: "держим " + top + " кг, добиваем до " + ex.repMax + " повторов", start: top };
+  }
+
+  function applySheetHistory(rows) {
+    var latest = {};
+    rows.forEach(function (row) {
+      var date = String(row[0] || "");
+      var rowDay = String(row[1] || "");
+      var exercise = String(row[4] || "");
+      var status = String(row[8] || "");
+      if (date < PROGRAM_START || status !== "Выполнен" || !DAYS[rowDay]) return;
+      var key = rowDay + "\u0000" + exercise;
+      if (!latest[key] || date > latest[key].date) latest[key] = { date: date, sets: [] };
+      if (latest[key].date === date) latest[key].sets.push({ w: Number(row[6]) || 0, r: Number(row[7]) || 0 });
+    });
+
+    Object.keys(DAYS).forEach(function (dayKey) {
+      DAYS[dayKey].forEach(function (ex) {
+        var p = recommendation(ex, latest[dayKey + "\u0000" + ex.name]);
+        ex.last = p.last;
+        ex.next = p.next;
+        ex.start = p.start;
+      });
+    });
+
+    if (!userTouched) state[day] = {};
+    render();
+  }
+
+  function readSheetHistory(token, done) {
+    var range = encodeURIComponent(GOOGLE_SHEET_NAME + "!A2:J");
+    fetch("https://sheets.googleapis.com/v4/spreadsheets/" + GOOGLE_SPREADSHEET_ID + "/values/" + range, {
+      headers: { "Authorization": "Bearer " + token }
+    }).then(function (response) {
+      if (!response.ok) throw new Error("Google Sheets: " + response.status);
+      return response.json();
+    }).then(function (body) {
+      applySheetHistory(body.values || []);
+      done(true);
+    }).catch(function () { done(false); });
+  }
+
+  function requestGoogleToken(interactive, done) {
+    if (!window.google || !google.accounts || !google.accounts.oauth2) { done(null); return; }
+    var client = google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: GOOGLE_SCOPE,
+      callback: function (response) {
+        if (response.error || !response.access_token) { done(null); return; }
+        googleToken = response.access_token;
+        done(googleToken);
+      }
+    });
+    client.requestAccessToken({ prompt: interactive && !googleToken ? "consent" : "" });
+  }
+
+  function syncWeights(interactive, afterSync) {
+    if (syncing) return;
+    syncing = true;
+    updateSyncButton();
+    requestGoogleToken(interactive, function (token) {
+      if (!token) {
+        syncing = false;
+        updateSyncButton();
+        if (interactive) toast("Не удалось войти в Google");
+        return;
+      }
+      readSheetHistory(token, function (ok) {
+        syncing = false;
+        updateSyncButton();
+        if (afterSync) afterSync(ok);
+        else if (interactive) toast(ok ? "Веса обновлены" : "Не удалось обновить веса");
+      });
+    });
+  }
+
   function saveToGoogleSheet() {
     var rows = buildSheetRows();
     if (!rows.length) { toast("Отметь хотя бы один выполненный подход"); return; }
@@ -986,7 +1238,10 @@
           if (!response.ok) throw new Error("Google Sheets: " + response.status);
           state[day].googleSaved = true;
           save();
-          finishSave("Записано в Google Таблицу");
+          finishSave();
+          syncWeights(false, function (synced) {
+            toast(synced ? "Записано — веса обновлены" : "Записано в Google Таблицу");
+          });
         }).catch(function () {
           finishSave("Не удалось записать — попробуй ещё раз");
         });
@@ -996,6 +1251,7 @@
   }
 
   document.getElementById("save").addEventListener("click", saveToGoogleSheet);
+  document.getElementById("sync").addEventListener("click", function () { syncWeights(true); });
 
   document.getElementById("reset").addEventListener("click", function () {
     if (!confirm("Стереть веса и отметки за сегодня?")) return;
@@ -1025,5 +1281,6 @@
     : "Сегодня не тренировочный день — зал по <b>ПН / СР / ПТ</b>.";
 
   render();
+  setTimeout(function () { syncWeights(false); }, 800);
 })();
 </script>
