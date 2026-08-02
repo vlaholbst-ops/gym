@@ -23,6 +23,8 @@ import { fileURLToPath } from 'node:url'
 const DIR = dirname(fileURLToPath(import.meta.url))
 const HEALTH = join(homedir(), 'Knowledge', 'Здоровье')
 const DAY_RE = /^(\d{4}-\d{2}-\d{2}) — День ([ABC])\.md$/
+// До 03.08 журналы относятся к старой A/B-программе и не годятся для новой прогрессии.
+const PROGRAM_START = '2026-08-03'
 
 // ---------- парсеры подходов ----------
 
@@ -92,6 +94,7 @@ function readJournal(dir, parseSets) {
     const m = file.match(DAY_RE)
     if (!m) continue
     const [, date, day] = m
+    if (date < PROGRAM_START) continue
 
     const rows = {}
     for (const line of readFileSync(join(dir, file), 'utf8').split('\n')) {

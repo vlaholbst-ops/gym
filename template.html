@@ -1,4 +1,4 @@
-<title>Зал — День A / День B</title>
+<title>Зал — Верх / Низ / Всё тело</title>
 <meta name="robots" content="noindex, nofollow, noarchive">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0e0f0d">
@@ -31,6 +31,7 @@
   /* Страница намеренно тёмная: телефон в руке, зал бликует. */
   :root[data-theme="light"] { color-scheme: dark; }
   [data-day="B"] { --accent: var(--violet); }
+  [data-day="C"] { --accent: var(--good); }
 
   * { box-sizing: border-box; }
 
@@ -58,7 +59,7 @@
   h1 { margin: 0; font-size: 14px; font-weight: 700; letter-spacing: .02em; }
   .date { font-family: var(--mono); font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }
 
-  .switch { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 8px 0; }
+  .switch { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 8px 0; }
   .switch button {
     appearance: none; border: 1px solid var(--line); background: var(--card);
     color: var(--dim); font-family: var(--ui); font-size: 14px; font-weight: 650;
@@ -67,6 +68,7 @@
   .switch button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   #tabA[aria-pressed="true"] { background: var(--lime); border-color: var(--lime); color: #0e0f0d; font-weight: 750; }
   #tabB[aria-pressed="true"] { background: var(--violet); border-color: var(--violet); color: #0e0f0d; font-weight: 750; }
+  #tabC[aria-pressed="true"] { background: var(--good); border-color: var(--good); color: #0e0f0d; font-weight: 750; }
 
   .suggest { font-size: 11.5px; color: var(--faint); margin: 0 0 7px; }
   .suggest b { color: var(--accent); font-weight: 650; }
@@ -268,12 +270,13 @@
 
 <header>
   <div class="bar1">
-    <h1 id="dayTitle">День A</h1>
+    <h1 id="dayTitle">Верх</h1>
     <span class="date" id="today"></span>
   </div>
   <div class="switch">
-    <button id="tabA" aria-pressed="true">День A</button>
-    <button id="tabB" aria-pressed="false">День B</button>
+    <button id="tabA" aria-pressed="true">Верх</button>
+    <button id="tabB" aria-pressed="false">Низ</button>
+    <button id="tabC" aria-pressed="false">Всё тело</button>
   </div>
   <p class="suggest" id="suggest"></p>
   <div class="prog"><i id="progI"></i></div>
@@ -343,6 +346,7 @@
 
   var WARMUP = {{WARMUP}};
   var DAYS = {{DAYS}};
+  var DAY_NAMES = { A: "Верх", B: "Низ", C: "Всё тело" };
 
   var app = document.getElementById("app");
   var toastEl = document.getElementById("toast");
@@ -363,6 +367,7 @@
     try { state = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { state = {}; }
     if (!state.A) state.A = {};
     if (!state.B) state.B = {};
+    if (!state.C) state.C = {};
   }
   function save() { state.day = day; try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
 
@@ -429,9 +434,10 @@
 
   function render() {
     document.documentElement.setAttribute("data-day", day);
-    document.getElementById("dayTitle").textContent = "День " + day;
+    document.getElementById("dayTitle").textContent = DAY_NAMES[day];
     document.getElementById("tabA").setAttribute("aria-pressed", String(day === "A"));
     document.getElementById("tabB").setAttribute("aria-pressed", String(day === "B"));
+    document.getElementById("tabC").setAttribute("aria-pressed", String(day === "C"));
     stopRest();
     app.innerHTML = "";
 
@@ -544,7 +550,7 @@
   /* ---------- экспорт ---------- */
 
   function buildText() {
-    var out = ["Тренировка " + iso + " — День " + day, ""];
+    var out = ["Тренировка " + iso + " — День " + day + " (" + DAY_NAMES[day] + ")", ""];
     DAYS[day].forEach(function (ex) {
       var st = state[day][ex.n];
       if (!st) return;
@@ -583,11 +589,12 @@
 
   document.getElementById("tabA").addEventListener("click", function () { day = "A"; save(); render(); });
   document.getElementById("tabB").addEventListener("click", function () { day = "B"; save(); render(); });
+  document.getElementById("tabC").addEventListener("click", function () { day = "C"; save(); render(); });
 
-  /* Чередование A-B-A / B-A-B от старта программы (ПН 06.07.2026). Зал: ПН / СР / ПТ. */
+  /* Новый цикл «Верх / Низ / Всё тело» с ближайшего полного тренировочного блока. */
   function scheduled() {
-    var wk = Math.floor((today - new Date(2026, 6, 6)) / 604800000);
-    var order = wk % 2 === 0 ? ["A", "B", "A"] : ["B", "A", "B"];
+    var wk = Math.floor((today - new Date(2026, 7, 3)) / 604800000);
+    var order = ["A", "B", "C"];
     var slot = { 1: 0, 3: 1, 5: 2 }[today.getDay()];
     return slot === undefined ? null : order[slot];
   }
@@ -599,7 +606,7 @@
   else if (plan) day = plan;
 
   sg.innerHTML = plan
-    ? "По расписанию сегодня <b>День " + plan + "</b>."
+    ? "По расписанию сегодня <b>" + DAY_NAMES[plan] + "</b>."
     : "Сегодня не тренировочный день — зал по <b>ПН / СР / ПТ</b>.";
 
   render();
