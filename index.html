@@ -3,6 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0e0f0d">
 <meta name="mobile-web-app-capable" content="yes">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 
 <style>
   /* Палитра из самого зала: лаймовые и фиолетовые стены, чёрный резиновый пол. */
@@ -239,13 +240,16 @@
     backdrop-filter: blur(12px); border-top: 1px solid var(--line);
     display: flex; gap: 8px;
   }
-  #bar button {
+  #bar button, #bar a {
     appearance: none; border: 1px solid var(--line); background: var(--card-2);
     color: var(--ink); font-family: var(--ui); font-size: 14px; font-weight: 600;
     padding: 10px; border-radius: 9px; cursor: pointer; touch-action: manipulation;
+    text-decoration: none; text-align: center;
   }
-  #copy { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 700; flex: 1; }
-  #reset { flex: 0 0 84px; }
+  #save { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 700; flex: 1; }
+  #save:disabled { opacity: .7; cursor: wait; }
+  #reset { flex: 0 0 72px; }
+  #journal { flex: 0 0 82px; }
 
   /* ---------- зум фото ---------- */
 
@@ -295,7 +299,8 @@
 
 <div id="bar">
   <button id="reset">Сброс</button>
-  <button id="copy">Скопировать тренировку</button>
+  <a id="journal" href="https://docs.google.com/spreadsheets/d/1BRNnPLaVh2a_9HHAKvLXgrDgGITnq5c5qW7u2fAqNzk/edit" target="_blank" rel="noopener">Журнал</a>
+  <button id="save">Сохранить</button>
 </div>
 
 <div id="zoom"><div><img id="zoomImg" alt=""><p id="zoomCap"></p></div></div>
@@ -715,6 +720,10 @@
   ]
 };
   var DAY_NAMES = { A: "Верх", B: "Низ", C: "Всё тело" };
+  var GOOGLE_CLIENT_ID = "591782636812-nno0rnsct96mrb325ot7hf1di8gj5kf1.apps.googleusercontent.com";
+  var GOOGLE_SPREADSHEET_ID = "1BRNnPLaVh2a_9HHAKvLXgrDgGITnq5c5qW7u2fAqNzk";
+  var GOOGLE_SHEET_NAME = "Журнал";
+  var GOOGLE_SCOPE = "https://www.googleapis.com/auth/spreadsheets";
 
   var app = document.getElementById("app");
   var toastEl = document.getElementById("toast");
@@ -724,6 +733,8 @@
 
   var day = "A";
   var state = {};
+  var googleToken = null;
+  var saving = false;
 
   var today = new Date();
   var DOW = ["ВС", "ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ"];
@@ -913,42 +924,78 @@
       if (cards[idx]) cards[idx].classList.toggle("done", st.sets.every(function (s) { return s.done; }));
     });
     document.getElementById("progI").style.width = (total ? (done / total) * 100 : 0) + "%";
+    updateSaveButton();
   }
 
-  /* ---------- экспорт ---------- */
+  /* ---------- Google Таблицы ---------- */
 
-  function buildText() {
-    var out = ["Тренировка " + iso + " — День " + day + " (" + DAY_NAMES[day] + ")", ""];
+  function buildSheetRows() {
+    var rows = [];
+    var note = state[day].note || "";
     DAYS[day].forEach(function (ex) {
       var st = state[day][ex.n];
       if (!st) return;
-      var done = st.sets.filter(function (s) { return s.done; });
-      if (!done.length) return;
-      out.push(ex.n + ". " + ex.name + " — " + done.map(function (s) { return s.w + "кг×" + s.r; }).join(", "));
+      st.sets.forEach(function (s, index) {
+        if (!s.done) return;
+        rows.push([iso, day, DAY_NAMES[day], ex.n, ex.name, index + 1, s.w, s.r, "Выполнен", note]);
+      });
     });
-    var skipped = DAYS[day].filter(function (ex) {
-      var st = state[day][ex.n];
-      return !st || !st.sets.some(function (s) { return s.done; });
-    });
-    if (skipped.length) out.push("", "Не сделано: " + skipped.map(function (e) { return e.name; }).join(", "));
-    if (state[day].note) out.push("", "Заметка: " + state[day].note);
-    return out.join("\n");
+    return rows;
   }
 
-  document.getElementById("copy").addEventListener("click", function () {
-    var t = buildText();
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(t).then(function () { toast("Скопировано — отправь Claude"); }, function () { fallback(t); });
-    } else fallback(t);
-  });
-  function fallback(t) {
-    var ta = document.createElement("textarea");
-    ta.value = t; ta.style.position = "fixed"; ta.style.opacity = "0";
-    document.body.appendChild(ta); ta.select();
-    try { document.execCommand("copy"); toast("Скопировано — отправь Claude"); }
-    catch (e) { toast("Не вышло — выдели вручную"); }
-    document.body.removeChild(ta);
+  function updateSaveButton() {
+    var button = document.getElementById("save");
+    if (!button) return;
+    button.disabled = saving;
+    button.textContent = saving ? "Сохраняю…" : state[day].googleSaved ? "В журнале ✓" : "Сохранить";
   }
+
+  function finishSave(message) {
+    saving = false;
+    updateSaveButton();
+    if (message) toast(message);
+  }
+
+  function saveToGoogleSheet() {
+    var rows = buildSheetRows();
+    if (!rows.length) { toast("Отметь хотя бы один выполненный подход"); return; }
+    if (state[day].googleSaved) { toast("Эта тренировка уже в журнале"); return; }
+    if (saving) return;
+    if (!window.google || !google.accounts || !google.accounts.oauth2) {
+      toast("Google ещё загружается — попробуй через секунду");
+      return;
+    }
+
+    saving = true;
+    updateSaveButton();
+    var client = google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: GOOGLE_SCOPE,
+      callback: function (response) {
+        if (response.error || !response.access_token) {
+          finishSave("Не удалось войти в Google");
+          return;
+        }
+        googleToken = response.access_token;
+        var range = encodeURIComponent(GOOGLE_SHEET_NAME + "!A:J");
+        fetch("https://sheets.googleapis.com/v4/spreadsheets/" + GOOGLE_SPREADSHEET_ID + "/values/" + range + ":append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS", {
+          method: "POST",
+          headers: { "Authorization": "Bearer " + googleToken, "Content-Type": "application/json" },
+          body: JSON.stringify({ majorDimension: "ROWS", values: rows })
+        }).then(function (response) {
+          if (!response.ok) throw new Error("Google Sheets: " + response.status);
+          state[day].googleSaved = true;
+          save();
+          finishSave("Записано в Google Таблицу");
+        }).catch(function () {
+          finishSave("Не удалось записать — попробуй ещё раз");
+        });
+      }
+    });
+    client.requestAccessToken({ prompt: googleToken ? "" : "consent" });
+  }
+
+  document.getElementById("save").addEventListener("click", saveToGoogleSheet);
 
   document.getElementById("reset").addEventListener("click", function () {
     if (!confirm("Стереть веса и отметки за сегодня?")) return;
